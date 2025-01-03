@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "unityhub-recyclefood",
+  "private_key_id": "9397226abeeee16cd147b7d485d34c1e3d47b987",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDOTTXeo/j0kzUw\n1tXp/VqC018gbet59qpJ07aUl26sfKxUSt68ZkZJW8sB8eq1Ue1JYt/VXNgc3+HE\nTknaulHUer99Ks7wdNNpvseiJ3RT/A9ctE/a4KMXGNGQRZgbz5GXcWZ1TADWg7jp\nYjwLsdvFB0DFmtnuxFYxtc/5iDpDnFJm7bgf2DdeO/OMoAHf+jHjuO6eU4hiadXc\nIgC1bSAi6luJWewpA/twNJCQgmix3KJCS+Vgxt+nnAZ5+78FfVJa9+LAqTmij8K+\noYVHiBaRc21CGwkCTdIqeOhQkldEs1/RGUz1A0Db0RWuhInvWYVZGEWzb+rIlgRm\nxzAIz7KLAgMBAAECggEANhj+GtNxyaS+in+TmafTr8HAzK62VIWv0us/EgkBvx50\nTChT7yB8puj4u5pV+1Uv/ZH9cyRFEZFN0R3cdQxtv+OuSiLLIDfqZmzeSbHB6fIL\njzpDRHiqm7ho38W4JPbRzV4xyWl0QMxK1XxqlYB+ylRkEk1Qf7GhjqiIEH2+FZM0\nWAUTNhUmXgLUFUlLqS6z4d31iSyZt3P85iO5r2G7hpRmQpLzgBbFz78UXg7DhVXQ\njj4lvHEf96z2kmIoYX+G69kIAUnVJa0GJLBHCCWHVZhjRdaf3ZfsVdEQG/a9+yoq\nciwlbzFY0ytKug7kUobN5ybTeX4xUJOAacIS2aau3QKBgQDuKMgEtgmLVW/QZhu9\n7tjDhOaZbqzEwVKlnz+BqnrsTUMGAydS/gE/NbwDGtKtXL267tMJiNDMoaeUS7Fv\nMi7lXKpHnIOcPxN40Fq4nFi/NAL+FTLAg0mC5fi1/okOSd7rHS+6odkb2dnb2W8q\nEcOjAyhOMXrOqNelCOL5/Z2QZwKBgQDdwX0tAHhojURg8EI+8c2OghGN08bOxVhW\n6gPQfI+uC+RhpInI/e4zxVA0Ta4399uJbTAAWmFWGMMwEsu4JEitT1bw08ivcVn0\nn8JroMWCzPquYICMxwdR2yBCGF//RFdCKYCS1W+Tay0o0MqmKY37khXLRp2awr3Q\nZz8bSWMmPQKBgBGQHlgCmKeW0F0c+pTCJWgdx+euurzzyMV//e3xBYmhlPy/hMnh\nA3SG4OuVsc2pFjDP5e5BEazViwcrodUibUTq1X/ccfQ2zpfNPbN5jC3lhwb3xztd\nMzGdBf9d2vubxP2vtFJeFyWvphpJaaI/lx7RX8qMaZMN7oE0K5Dl/BWnAoGBAIKw\nCDRgRZXgQz8Z+QCdgnYM44mBGHY9SW2XZn4VGpwI+CQvUuB3/kzWaQkaCqWDVgds\nqNBcc2bJGycWvKaeA5LX4jX1qhzzIX+QM4U4b45BfS8NQlU06nRsPluVf+WxgfdE\n/DgMvz/S9v9J5VP9w2ZSVrPAvxs4z6KlZkSPgHZFAoGAUuMsBoKT/deL1ibXwrEK\nyoS1ba1O2sdD7ftUyuKj4N2+V57mRNIhCuc7dLfnAn+J+6T0XSuUU3xDYfUd2NUn\n4YKLrKf9WFr3fWZco+1IHB+WT6vHLiTDgcGWrPxcAlVoCJCx+1M5rDDLMZrbCD7E\n4OE/vSIeOmVEcimSFVCYgvg=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-4b91b@unityhub-recyclefood.iam.gserviceaccount.com",
+  "client_id": "108363808333848312332",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-4b91b%40unityhub-recyclefood.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

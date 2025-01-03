@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Code Scanner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    #navbar {
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin: 1rem 0;
+    }
+
+    .scanner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #video {
+      width: 1000px;
+      height: 500px;
+      border-radius: 10px;
+      border: 2px solid #3498db;
+      margin-bottom: 1rem;
+    }
+
+    #buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    #startButton {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    #stopButton {
+      background-color: #f44336;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    #qrCodeResult {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
+
+    #qrCodeResult.success {
+      color: #4caf50;
+    }
+
+    #qrCodeResult.error {
+      color: #f44336;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+</head>
+<body>
+  <div id="navbar"></div>
+  <h1>QR Code Scanner</h1>
+  <div class="scanner-container">
+    <video id="video" autoplay muted></video>
+    <div id="buttons">
+      <button id="startButton">Start Camera</button>
+      <button id="stopButton" disabled>Stop Camera</button>
+    </div>
+    <div id="qrCodeResult"></div>
+  </div>
+
+  <script>
+    const videoElement = document.getElementById("video");
+    const startButton = document.getElementById("startButton");
+    const stopButton = document.getElementById("stopButton");
+    const qrCodeResult = document.getElementById("qrCodeResult");
+    let stream;
+
+    // Start the camera
+    startButton.addEventListener("click", () => {
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: "environment" } })
+        .then((mediaStream) => {
+          stream = mediaStream;
+          videoElement.srcObject = mediaStream;
+          startButton.disabled = true;
+          stopButton.disabled = false;
+          qrCodeResult.textContent = ""; // Clear previous result
+          qrCodeResult.className = "";
+          scanQRCode();
+        })
+        .catch((error) => {
+          console.error("Error accessing the camera: ", error);
+          qrCodeResult.textContent = "Error accessing camera. Please check your device settings.";
+          qrCodeResult.className = "error";
+        });
+    });
+
+    // Stop the camera
+    stopButton.addEventListener("click", () => {
+      if (stream) {
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+        videoElement.srcObject = null;
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        qrCodeResult.textContent = ""; // Clear result
+        qrCodeResult.className = "";
+      }
+    });
+
+    let lastQRCode = "";
+
+    function scanQRCode() {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      function captureFrame() {
+        if (videoElement.videoWidth > 0) {
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+          context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+          const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+          if (code) {
+            const qrCodeData = code.data;
+
+            if (qrCodeData !== lastQRCode) {
+              lastQRCode = qrCodeData;
+              qrCodeResult.textContent = "QR Code Detected: " + qrCodeData;
+              qrCodeResult.className = "success";
+
+              fetch(`http://localhost:3001/api/v1/order/take/${qrCodeData}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("Success:", data);
+                  window.location.href = `orderDetails.html?orderId=${qrCodeData}`;
+                })
+                .catch((error) => {
+                  console.error("Error:", error);
+                  qrCodeResult.textContent = "Error processing the QR code. Please try again.";
+                  qrCodeResult.className = "error";
+                });
+            }
+          }
+        }
+        requestAnimationFrame(captureFrame);
+      }
+
+      captureFrame();
+    }
+  </script>
+
+  <script>
+    // Load the navbar dynamically
+    fetch("navbar.html")
+      .then((response) => response.text())
+      .then((data) => {
+        document.getElementById("navbar").innerHTML = data;
+      })
+      .catch((error) => console.error("Error loading navbar:", error));
+  </script>
+</body>
+</html>

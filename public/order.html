@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant Orders</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+      }
+
+      header {
+        background-color: #4caf50;
+        color: white;
+        text-align: center;
+        padding: 1rem;
+      }
+
+      main {
+        padding: 1rem;
+      }
+
+      .restaurant-list,
+      .order-list {
+        margin: 1rem 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: white;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: #333;
+      }
+
+      .card p {
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      .btn {
+        background-color: #4caf50;
+        color: white;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background-color: #45a049;
+      }
+
+      .loader {
+        text-align: center;
+        font-size: 1.2rem;
+        color: #666;
+      }
+
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="navbar"></div>
+    <header>
+      <h1>Restaurant Orders</h1>
+    </header>
+    <main>
+      <section class="restaurant-list">
+        <h2>Restaurants</h2>
+        <div id="restaurants" class="grid">
+          <div class="loader">Loading restaurants...</div>
+        </div>
+      </section>
+      <section class="order-list">
+        <h2>Orders</h2>
+        <div id="orders">
+          <div class="loader">Select a restaurant to view orders</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Fetch restaurants from the server
+      async function fetchRestaurants() {
+        const restaurantContainer = document.getElementById("restaurants");
+        restaurantContainer.innerHTML = '<div class="loader">Loading restaurants...</div>';
+
+        try {
+          // Replace this URL with your API endpoint for fetching restaurants
+          const response = await fetch("http://localhost:3001/api/v1/restaurant");
+          const restaurants = await response.json();
+
+          restaurantContainer.innerHTML = ""; // Clear the loader
+
+          restaurants.data.forEach((restaurant) => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            card.innerHTML = `
+            <h3>${restaurant.name}</h3>
+            <p>ID: ${restaurant.id}</p>
+            <button class="btn" onclick="fetchOrders('${restaurant.id}')">View Orders</button>
+          `;
+
+            restaurantContainer.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Error fetching restaurants:", error);
+          restaurantContainer.innerHTML = "<p>Error loading restaurants.</p>";
+        }
+      }
+
+      // Fetch orders for a specific restaurant
+      async function fetchOrders(restaurantId) {
+        const ordersContainer = document.getElementById("orders");
+        ordersContainer.innerHTML = '<div class="loader">Loading orders...</div>';
+
+        try {
+          // Replace this URL with your API endpoint for fetching orders by restaurant ID
+          const response = await fetch(`http://localhost:3001/api/v1/order?restaurantId=${restaurantId}`);
+          const orders = await response.json();
+
+          ordersContainer.innerHTML = ""; // Clear the loader
+
+          if (orders.data.length === 0) {
+            ordersContainer.innerHTML = "<p>No orders found for this restaurant.</p>";
+            return;
+          }
+
+          orders.data.forEach((order) => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            card.innerHTML = `
+  <h3>Order ID: ${order.orderId}</h3>
+  <p><strong>User ID:</strong> ${order.user.username}</p>
+  <p><strong>Total Amount:</strong> ${order.totalAmount}</p>
+  <p><strong>Status:</strong> ${order.status}</p>
+  <p><strong>Created At:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+  <button class="btn" onclick="redirectToOrderDetails('${order.orderId}')">View Details</button>
+`;
+
+            ordersContainer.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Error fetching orders:", error);
+          ordersContainer.innerHTML = "<p>Error loading orders.</p>";
+        }
+      }
+
+      function redirectToOrderDetails(orderId) {
+        window.location.href = `orderDetails.html?orderId=${orderId}`;
+      }
+      
+
+      // Initialize the page
+      fetchRestaurants();
+    </script>
+
+    <script>
+        // Load the navbar dynamically
+        fetch("navbar.html")
+          .then(response => response.text())
+          .then(data => {
+            document.getElementById("navbar").innerHTML = data;
+          })
+          .catch(error => console.error("Error loading navbar:", error));
+      </script>
+  </body>
+</html>

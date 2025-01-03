@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Update Restaurant</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <div id="navbar"></div>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Update Restaurant</h1>
+    <form id="updateRestaurantForm" class="border p-4 rounded shadow" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="restaurantId" class="form-label">Select Restaurant</label>
+        <select class="form-select" id="restaurantId" name="restaurantId" required>
+          <option value="" disabled selected>Select a restaurant</option>
+          <!-- Options will be dynamically added -->
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="restaurantName" class="form-label">Restaurant Name</label>
+        <input type="text" class="form-control" id="restaurantName" name="name" placeholder="Enter restaurant name" required>
+      </div>
+      <div class="mb-3">
+        <label for="restaurantDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="restaurantDescription" name="description" rows="4" placeholder="Enter restaurant description" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="restaurantPicture" class="form-label">Update Picture (Optional)</label>
+        <input type="file" class="form-control" id="restaurantPicture" name="picture_restaurant" accept="image/*">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Update Restaurant</button>
+    </form>
+  </div>
+
+  <script>
+    // Function to fetch restaurants and populate the dropdown
+    async function loadRestaurants() {
+      try {
+        const response = await fetch("http://localhost:3001/api/v1/restaurant");
+        const restaurants = await response.json();
+
+        if (response.ok) {
+          const dropdown = document.getElementById("restaurantId");
+          restaurants.data.forEach((restaurant) => {
+            const option = document.createElement("option");
+            option.value = restaurant.id; // Restaurant ID as the value
+            option.textContent = restaurant.name; // Restaurant name as text
+            dropdown.appendChild(option);
+          });
+        } else {
+          alert(`Failed to load restaurants: ${restaurants.message}`);
+        }
+      } catch (error) {
+        console.error("Error fetching restaurants:", error);
+        alert("An error occurred while loading restaurants.");
+      }
+    }
+
+    // Fetch and populate restaurant details when a restaurant is selected
+    document.getElementById("restaurantId").addEventListener("change", async (e) => {
+      const restaurantId = e.target.value;
+      if (!restaurantId) return;
+
+      try {
+        const response = await fetch(`http://localhost:3001/api/v1/restaurant/${restaurantId}`);
+        const restaurant = await response.json();
+
+        if (response.ok) {
+          document.getElementById("restaurantName").value = restaurant.data.name || "";
+          document.getElementById("restaurantDescription").value = restaurant.data.description || "";
+        } else {
+          alert(`Failed to load restaurant details: ${restaurant.message}`);
+        }
+      } catch (error) {
+        console.error("Error fetching restaurant details:", error);
+        alert("An error occurred while fetching restaurant details.");
+      }
+    });
+
+    // Handle form submission to update restaurant
+    document.getElementById("updateRestaurantForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const restaurantId = document.getElementById("restaurantId").value;
+      if (!restaurantId) {
+        alert("Please select a restaurant to update.");
+        return;
+      }
+
+      console.log(restaurantId)
+
+      const formData = new FormData(e.target);
+
+      try {
+        const response = await fetch(`http://localhost:3001/api/v1/restaurant/${restaurantId}`, {
+          method: "PUT",
+          body: formData,
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert("Restaurant updated successfully!");
+          e.target.reset(); // Reset the form
+        } else {
+          alert(`Error: ${result.message}`);
+        }
+      } catch (error) {
+        console.error("Error updating restaurant:", error);
+        alert("An error occurred. Please try again.");
+      }
+    });
+
+    // Load restaurants on page load
+    window.onload = loadRestaurants;
+  </script>
+
+  <script>
+    // Load the navbar dynamically
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      })
+      .catch(error => console.error("Error loading navbar:", error));
+  </script>
+</body>
+</html>

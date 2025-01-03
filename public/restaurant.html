@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Add Restaurant</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <div id="navbar"></div>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Add a New Restaurant</h1>
+    <form id="addRestaurantForm" class="border p-4 rounded shadow">
+      <div class="mb-3">
+        <label for="restaurantName" class="form-label">Restaurant Name</label>
+        <input type="text" class="form-control" id="restaurantName" name="name" placeholder="Enter restaurant name" required>
+      </div>
+      <div class="mb-3">
+        <label for="restaurantAddress" class="form-label">Address</label>
+        <textarea class="form-control" id="restaurantAddress" name="address" rows="3" placeholder="Enter restaurant address" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="restaurantDescription" class="form-label">Description</label>
+        <textarea class="form-control" id="restaurantDescription" name="description" rows="4" placeholder="Enter restaurant description" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="latitude" class="form-label">Latitude</label>
+        <input type="text" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude" required>
+      </div>
+      <div class="mb-3">
+        <label for="longitude" class="form-label">Longitude</label>
+        <input type="text" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude" required>
+      </div>
+      
+      <div class="mb-3">
+        <label for="restaurantPicture" class="form-label">Picture</label>
+        <input type="file" class="form-control" id="restaurantPicture" name="picture_restaurant" accept="image/*" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Add Restaurant</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("addRestaurantForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Collect form data
+      const formData = new FormData(e.target);
+
+      try {
+        // Send POST request to the backend API
+        const response = await fetch("http://localhost:3001/api/v1/restaurant", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert("Restaurant added successfully!");
+          e.target.reset(); // Reset the form
+        } else {
+          alert(`Error: ${result.message}`);
+        }
+      } catch (error) {
+        console.error("Error adding restaurant:", error);
+        alert("An error occurred. Please try again.");
+      }
+    });
+  </script>
+
+  <script>
+    // Load the navbar dynamically
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      })
+      .catch(error => console.error("Error loading navbar:", error));
+  </script>
+</body>
+</html>

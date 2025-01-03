@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Mystery Box</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      width: 80%;
+      margin: 20px auto;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section h2 {
+      margin-bottom: 10px;
+    }
+    .restaurant-item, .product-item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .restaurant-item:hover, .product-item:hover {
+      background-color: #f9f9f9;
+    }
+    .selected {
+      background-color: #d1e7dd;
+      border-color: #0f5132;
+    }
+    .btn {
+      padding: 10px 15px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .input-group input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .product-item {
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    
+    .product-item.selected {
+      background-color: #d1e7dd;
+      border-color: #0f5132;
+      transform: scale(1.05);
+    }
+    
+  </style>
+</head>
+<body>
+
+  <div id="navbar"></div>
+
+  <div class="container">
+    <div class="section">
+      <h2>Select a Restaurant</h2>
+      <div id="restaurants"></div>
+    </div>
+
+    <div class="section">
+      <h2>Select Products for Mystery Box</h2>
+      <div id="products"></div>
+    </div>
+
+    <div class="section">
+      <h2>Finalize Mystery Box</h2>
+      <div class="input-group">
+        <label for="boxName">Mystery Box Name</label>
+        <input type="text" id="boxName" placeholder="Enter a unique name for the mystery box" />
+      </div>
+      <div class="input-group">
+        <label for="boxPrice">Price (in your local currency)</label>
+        <input type="number" id="boxPrice" placeholder="Enter the price" min="0" step="0.01" oninput="validatePrice()" />
+        <small id="priceSuggestion" style="color: gray;"></small>
+      </div>
+      <button id="createBox" class="btn" disabled>Create Mystery Box</button>
+    </div>
+  </div>
+
+  <script>
+    // Utility function to format price in IDR
+    function formatPriceIDR(price) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(price);
+    }
+
+    const BASE_URL = "http://localhost:3001/api/v1";
+    const restaurantsDiv = document.getElementById("restaurants");
+    const productsDiv = document.getElementById("products");
+    const createBoxBtn = document.getElementById("createBox");
+    const priceInput = document.getElementById("boxPrice");
+    const priceSuggestion = document.getElementById("priceSuggestion");
+
+    let selectedRestaurant = null;
+    let selectedProducts = [];
+    let totalProductPrice = 0;
+
+    // Fetch and display restaurants
+    async function fetchRestaurants() {
+      const response = await fetch(`${BASE_URL}/restaurant`);
+      const data = await response.json();
+
+      data.data.forEach((restaurant) => {
+        const div = document.createElement("div");
+        div.className = "restaurant-item";
+        div.textContent = restaurant.name;
+        div.onclick = () => selectRestaurant(restaurant.id);
+        restaurantsDiv.appendChild(div);
+      });
+    }
+
+    // Fetch and display products of a restaurant
+    async function fetchProducts(restaurantId) {
+      const response = await fetch(`${BASE_URL}/restaurant/${restaurantId}/products`);
+      const data = await response.json();
+
+      productsDiv.innerHTML = ""; // Clear previous products
+      totalProductPrice = 0;
+      selectedProducts = [];
+      data.data.forEach((product) => {
+        const div = document.createElement("div");
+        div.className = "product-item";
+        div.innerHTML = `<span>${product.name}</span><span>${formatPriceIDR(product.price)}</span>`;
+        div.onclick = () => toggleProductSelection(product);
+        productsDiv.appendChild(div);
+      });
+      updatePriceSuggestion();
+    }
+
+    // Select a restaurant
+    function selectRestaurant(restaurantId) {
+      selectedRestaurant = restaurantId;
+      fetchProducts(restaurantId);
+
+      Array.from(restaurantsDiv.children).forEach((child) =>
+        child.classList.remove("selected")
+      );
+    }
+
+    // Toggle product selection
+    function toggleProductSelection(product) {
+      const index = selectedProducts.findIndex((p) => p.id === product.id);
+      const productDivs = Array.from(productsDiv.children);
+    
+      if (index === -1) {
+        selectedProducts.push(product);
+        totalProductPrice += product.price;
+      } else {
+        selectedProducts.splice(index, 1);
+        totalProductPrice -= product.price;
+      }
+    
+      productDivs.forEach((div) => {
+        const productName = div.querySelector('span').textContent.trim();
+        if (selectedProducts.some((p) => p.name === productName)) {
+          div.classList.add("selected");
+        } else {
+          div.classList.remove("selected");
+        }
+      });
+    
+      createBoxBtn.disabled = selectedProducts.length === 0;
+
+      updatePriceSuggestion();
+    }
+    // Update price suggestion
+    function updatePriceSuggestion() {
+      const suggestedPrice = totalProductPrice * 0.5;
+      priceSuggestion.textContent = `Suggested Price: ${formatPriceIDR(suggestedPrice)} (at least 50% off total price of selected products)`;
+    }
+
+    // Validate the price
+    function validatePrice() {
+      const price = parseFloat(priceInput.value);
+      const minPrice = totalProductPrice * 0.5;
+
+      if (price <= minPrice) {
+        priceInput.style.borderColor = "green";
+        createBoxBtn.disabled = false;
+      } else {
+        priceInput.style.borderColor = "red";
+        createBoxBtn.disabled = true;
+      }
+    }
+
+    // Create Mystery Box
+    const createMysteryBox = async () => {
+      const name = document.getElementById("boxName").value;
+      const price = parseFloat(priceInput.value);
+    
+      // Validate fields and price
+      if (!name || !price || selectedProducts.length === 0) {
+        alert("Please fill in all fields and select products!");
+        return;
+      }
+    
+      // Validate if price is less than 50% of the total product price
+      const minPrice = totalProductPrice * 0.5;
+      if (price >= minPrice) {
+        alert("The price must be less than 50% of the total product price!");
+        priceInput.style.borderColor = "red";  // Optional: visually indicate invalid price
+        return;
+      }
+    
+      try {
+        const response = await fetch(`${BASE_URL}/mysterybox/${selectedRestaurant}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            price,
+            products: selectedProducts.map((p) => p.id),
+          }),
+        });
+    
+        const data = await response.json();
+        if (data.statusCode === 201) {
+          alert("Mystery Box created successfully!");
+        } else {
+          alert("Failed to create Mystery Box: " + data.message);
+        }
+      } catch (error) {
+        console.error("Error creating Mystery Box:", error);
+        alert("Failed to create Mystery Box. Please try again later.");
+      }
+    };
+    
+    createBoxBtn.onclick = createMysteryBox;
+    fetchRestaurants();
+  </script>
+
+  <script>
+    // Load the navbar dynamically
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      })
+      .catch(error => console.error("Error loading navbar:", error));
+  </script>
+</body>
+</html>

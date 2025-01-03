@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .details {
+      margin: 1rem 0;
+    }
+
+    .details p {
+      margin: 0.5rem 0;
+    }
+
+    .details strong {
+      display: inline-block;
+      width: 150px;
+    }
+
+    .back-btn,
+    .upload-btn {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem 1rem;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 5px;
+      width: 200px;
+      cursor: pointer;
+    }
+
+    .back-btn {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .back-btn:hover {
+      background-color: #45a049;
+    }
+
+    .upload-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+    }
+
+    .upload-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .file-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Order Details</h1>
+    <div class="details" id="orderDetails">
+      <!-- Order details will be inserted dynamically -->
+    </div>
+    <input type="file" id="proofFile" class="file-input" accept="image/*">
+    <button class="upload-btn" id="uploadProofButton" style="display: none;">Upload Proof</button>
+    <a href="javascript:void(0);" class="back-btn" onclick="goBack()">Back</a>
+
+  </div>
+
+  <script>
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // If there's no history, navigate to a default page, e.g., home
+        window.location.href = "/";
+      }
+    }
+    
+    // Function to fetch order details by ID
+    async function fetchOrderDetails(orderId) {
+      try {
+        const response = await fetch(`http://localhost:3001/api/v1/order/details/${orderId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch order details");
+        }
+        const data = await response.json();
+        return data.data;
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+        return null;
+      }
+    }
+
+    // Function to handle proof upload
+async function handleProofUpload(orderId) {
+    const proofFileInput = document.getElementById("proofFile");
+    proofFileInput.click();
+  
+    proofFileInput.addEventListener("change", async () => {
+      const file = proofFileInput.files[0];
+      if (file) {
+        alert(`File "${file.name}" selected for upload`);
+  
+        // Prepare the form data for upload
+        const formData = new FormData();
+        formData.append("proofFile", file);
+  
+        try {
+          // Send the file to the server
+          const response = await fetch(`http://localhost:3001/api/v1/order/${orderId}/upload-proof`, {
+            method: "POST",
+            body: formData,
+          });
+  
+          if (!response.ok) {
+            throw new Error("Failed to upload proof");
+          }
+  
+          const result = await response.json();
+          alert("Proof uploaded successfully!");
+          console.log("Upload result:", result);
+        } catch (error) {
+          console.error("Error uploading proof:", error);
+          alert("Error uploading proof. Please try again.");
+        }
+      }
+    });
+  }
+  
+
+    // Function to display order details on the page
+    function displayOrderDetails(order) {
+      const orderDetailsElement = document.getElementById("orderDetails");
+      const uploadProofButton = document.getElementById("uploadProofButton");
+
+      if (!order) {
+        orderDetailsElement.innerHTML = "<p>Unable to load order details. Please try again later.</p>";
+        return;
+      }
+
+      let detailsHtml = `
+        <p><strong>Order ID:</strong> ${order.orderId}</p>
+        <p><strong>User ID:</strong> ${order.userId}</p>
+        <p><strong>Total Amount:</strong> $${order.totalAmount.toFixed(2)}</p>
+        <p><strong>Created At:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+      `;
+
+      // Add additional details if the category is 'Donation'
+      if (order.category === "Donation") {
+        detailsHtml += `
+          <p><strong>Phone Number Receiver:</strong> ${order.phoneNumberReceiver || "N/A"}</p>
+          <p><strong>Address Receiver:</strong> ${order.addressReceiver || "N/A"}</p>
+        `;
+
+        // Show the upload proof button for Donation category
+        uploadProofButton.style.display = "block";
+        uploadProofButton.addEventListener("click", () => handleProofUpload(orderId));
+
+      }
+
+      orderDetailsElement.innerHTML = detailsHtml;
+    }
+
+    // Get the order ID from the URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get("orderId");
+
+    // Fetch and display the order details if orderId is available
+    if (orderId) {
+      fetchOrderDetails(orderId).then((order) => displayOrderDetails(order));
+    } else {
+      displayOrderDetails(null);
+    }
+  </script>
+</body>
+</html>
